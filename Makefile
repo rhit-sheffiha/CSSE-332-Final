@@ -1,5 +1,6 @@
 K=kernel
 U=user
+LAB=0
 
 OBJS = \
   $K/entry.o \
@@ -28,8 +29,7 @@ OBJS = \
   $K/sysfile.o \
   $K/kernelvec.o \
   $K/plic.o \
-  $K/virtio_disk.o \
-  $K/list.o
+  $K/virtio_disk.o
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-
 # perhaps in /opt/riscv/bin
@@ -173,13 +173,23 @@ qemu-gdb: $K/kernel .gdbinit fs.img
 	@echo "*** Now run 'gdb' in another window." 1>&2
 	$(QEMU) $(QEMUOPTS) -S $(QEMUGDB)
 
+
 ##
-## FOR submission purposes
+## FOR testing lab grading script
 ##
 
-submit:
+
+ifneq ($(V),@)
+GRADEFLAGS += -v
+endif
+
+print-gdbport:
+	@echo $(GDBPORT)
+
+grade:
 	@echo $(MAKE) clean
 	@$(MAKE) clean || \
-	 (echo "'make clean' failed. HINT: Do you have another running instance of xv6?" && exit 1)
-	@git diff > submit-lab-sched.patch
-	@tar --exclude-from="exclude.txt" -cvf submit-lab-sched.tar .
+          (echo "'make clean' failed.  HINT: Do you have another running instance of xv6?" && exit 1)
+	./grade-lab-$(LAB).py $(GRADEFLAGS)
+
+

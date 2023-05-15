@@ -1,2 +1,2 @@
-user/xv6test.o: user/xv6test.c kernel/types.h kernel/stat.h user/user.h \
- kernel/syscall.h
+user/xv6test.o: user/xv6test.c kernel/audit_source.c kernel/audit_list.h \
+ kernel/types.h

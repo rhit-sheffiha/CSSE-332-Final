@@ -482,7 +482,7 @@ scheduler(void)
   int not_runnable_count = 0;
 
   // create the queue
-  init_list_head(&runq);
+  //init_list_head(&runq);
 
   c->proc = 0;
   for(;;){
