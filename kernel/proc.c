@@ -11,11 +11,6 @@ struct cpu cpus[NCPU];
 struct proc proc[NPROC];
 struct list_head runq;
 
-struct aud {
-  int* arr;
-  int* length;
-};
-
 struct proc *initproc;
 
 int nextpid = 1;
@@ -339,12 +334,13 @@ fork(void)
 }
 
 uint64
-audit(int* arr) 
+audit(uint num) 
 {
-  // just pass along the address of the array, but in uint64 form
-  printf("In audit\n");
-  printf("%d\n", (uint64) arr);
-  return (uint64) arr;
+  // int is the bitwise representation of all the calls we want to audit.
+  // bits 0-21 will be filled with the actual information.
+  // we will shift right to throw the other 10 bits away, and return the result
+  // to syscall.h, which will parse it into an array.
+  return (num >> 10);
 }
 
 // Pass p's abandoned children to init.

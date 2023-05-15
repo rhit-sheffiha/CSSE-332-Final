@@ -22,7 +22,9 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int audit(int*);
+// pass in a int, just as a binary "yes/no"
+// to include a call in the audit log 
+int audit(uint);
 
 // ulib.c
 int stat(const char*, struct stat*);

@@ -33,6 +33,17 @@ struct audit_data {
 struct audit_data bruh[MAX_SIZE];
 int num_entries = 0;
 
+// excluding audit, since it should ALWAYS be apparent.
+#define NUM_SYS_CALLS 21
+
+// set everything to be whitelisted by default
+char whitelisted[NUM_SYS_CALLS] = 
+                        {1, 1, 1, 1, 1,
+                         1, 1, 1, 1, 1,
+                         1, 1, 1, 1, 1,
+                         1, 1, 1, 1, 1,
+                         1};
+
 char* name_from_num[] = {"unknown",
                         "fork", "exit", "wait",
                         "pipe", "read", "kill",
@@ -197,9 +208,7 @@ syscall(void)
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
 
-    // if this is a file-related process, we want to look at the file
-    // before any calls are made, since we need to know who accessed it
-    // and we will lose the args after the syscall is made.
+    // steal the file away, if there is one, before we return a0.
     int fd = -1;
     struct file *f;
 
@@ -212,33 +221,45 @@ syscall(void)
     
     // let the system call go through.
     p->trapframe->a0 = syscalls[num]();
-
-    // these things will be consistent across processes, no matter if it used a file
-    struct audit_data cur;
-    cur.process_pid = p->pid;
-    cur.process_name = p->name;
-    cur.time = ticks;
-    cur.process_name = name_from_num[num];
-    if (fd != -1) {
-      // need to set fd info
-      cur.fd_used = 1;
-      cur.fd_read = f->readable;
-      cur.fd_write = f->writable;
-
-
-      printf("Process %s pid %d called syscall %s at time %d and used FD %d (perms r: %d, w: %d)\n",
-              p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
-    } else {
-      // just say we didn't use one
-      cur.fd_used = 0;
-
-
-      printf("Process %s pid %d called syscall %s at time %d\n", 
-            p->name, p->pid, name_from_num[num], ticks);
+    if (num == 22) {
+      // it was an audit call. Retrieve the number and parse the bits into an array.
+      uint audit_num = (uint) p->trapframe->a0;
+      for (int i = 0; i < NUM_SYS_CALLS; i++) {
+        whitelisted[i] = 0; // reset the array position first.
+        // just and it with 32-bit 1
+        if (audit_num & 0b00000000000000000000000000000001) { // bit was toggled, whitelist
+          whitelisted[NUM_SYS_CALLS - i] = 1;
+        }
+        // shift it right by 1
+        audit_num = audit_num >> 1;
+      }
     }
 
-    // here just so we don't throw unused variable errors
-    printf("%d\n", cur->process_pid);
+    // it should always be apparent when audit is called.
+    if (whitelisted[num - 1] || num == SYS_audit) {
+      // these things will be consistent across processes, no matter if it used a file
+      struct audit_data cur;
+      cur.process_pid = p->pid;
+      cur.process_name = p->name;
+      cur.time = ticks;
+      cur.process_name = name_from_num[num];
+      if (fd != -1) {
+        // need to set fd info
+        cur.fd_used = 1;
+        cur.fd_read = f->readable;
+        cur.fd_write = f->writable;
+        printf("Process %s pid %d called syscall %s at time %d and used FD %d (perms r: %d, w: %d)\n",
+                p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
+      } else {
+        // just say we didn't use one
+        cur.fd_used = 0;
+        printf("Process %s pid %d called syscall %s at time %d\n", 
+                p->name, p->pid, name_from_num[num], ticks);
+      }
+      // here just so we don't throw unused variable errors
+      int bruh = cur.process_pid;
+      bruh++;
+    }
   } else {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);

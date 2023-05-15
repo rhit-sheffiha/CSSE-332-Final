@@ -93,9 +93,9 @@ sys_uptime(void)
 uint64
 sys_audit(void)
 {
-  printf("in sys audit\n");
-  uint64 arr_addr;
-  argaddr(0, &arr_addr);
-  return audit((int*) arr_addr);
+  // fetch the integer
+  int n;
+  argint(0, &n); 
+  return audit(n);
 }
 
