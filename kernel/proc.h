@@ -85,16 +85,6 @@ struct list_head {
   struct list_head *next, *prev;
 };
 
-struct audit_data {
-  int call_type;
-  int fd;
-  int perms;
-  uint64 time;
-  int state;
-};
-
-
-
 // Per-process state
 struct proc {
   struct spinlock lock;

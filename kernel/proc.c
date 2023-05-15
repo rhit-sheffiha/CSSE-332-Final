@@ -11,11 +11,6 @@ struct cpu cpus[NCPU];
 struct proc proc[NPROC];
 struct list_head runq;
 
-struct data_holder {
-  struct list_head list;
-  struct proc p;
-};
-
 struct aud {
   int* arr;
   int* length;
@@ -344,17 +339,12 @@ fork(void)
 }
 
 uint64
-audit(int* arr, int* length) 
+audit(int* arr) 
 {
-  printf("arr address in audit on proc side: %p\n", arr);
-  printf("length address passed through: %p\n", length);
-  struct aud bruh;
-  bruh.arr = arr;
-  bruh.length = length;
-  printf("length: %d\n", *length);
-  printf("bruh length address: %p\n", bruh.length);
-  printf("address of bruh: %p\n", &bruh);
-  return (uint64)&bruh;
+  // just pass along the address of the array, but in uint64 form
+  printf("In audit\n");
+  printf("%d\n", (uint64) arr);
+  return (uint64) arr;
 }
 
 // Pass p's abandoned children to init.

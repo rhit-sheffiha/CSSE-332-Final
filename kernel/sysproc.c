@@ -95,10 +95,7 @@ sys_audit(void)
 {
   printf("in sys audit\n");
   uint64 arr_addr;
-  uint64 length;
   argaddr(0, &arr_addr);
-  argaddr(1, &length);
-  printf("address of length: %p\n", (int*) length);
-  return audit((int*) arr_addr, (int*) length);
+  return audit((int*) arr_addr);
 }
 

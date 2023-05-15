@@ -5,20 +5,33 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "syscall.h"
+#include "fs.h"
+#include "sleeplock.h"
+#include "file.h"
 #include "defs.h"
+
+struct audit_data {
+  // process information
+  int process_pid;
+  char* process_name;
+
+  // did it use a file?
+  int fd_used;
+
+  // what are the perms if it did?
+  int fd_read;
+  int fd_write;
+
+  // what call did it make?
+  char* call_name;
+  
+  // what time was the call at?
+  uint64 time;
+};
 
 #define MAX_SIZE 1024
 struct audit_data bruh[MAX_SIZE];
 int num_entries = 0;
-
-// idea that is if we're in one of these, we need
-// to fetch file fd. This changes a0, so we need to know.
-int file_processes[] = {5, 9, 16, 17, 22};
-
-// currently have 22 system calls; so all of them could potentially be whitelisted...
-# define NUM_CALLS 22
-int whitelisted[NUM_CALLS] = {0};
-int declared_length = 0;
 
 char* name_from_num[] = {"unknown",
                         "fork", "exit", "wait",
@@ -29,12 +42,6 @@ char* name_from_num[] = {"unknown",
                         "write", "mknod", "unlink", 
                         "link", "mkdir", "close", "audit"};
 
-struct aud {
-  int* arr;
-  int* length;
-};
-
-
 // Fetch the uint64 at addr from the current process.
 int
 fetchaddr(uint64 addr, uint64 *ip)
@@ -44,6 +51,25 @@ fetchaddr(uint64 addr, uint64 *ip)
     return -1;
   if(copyin(p->pagetable, (char *)ip, addr, sizeof(*ip)) != 0)
     return -1;
+  return 0;
+}
+
+// Fetch the nth word-sized system call argument as a file descriptor
+// and return both the descriptor and the corresponding struct file.
+// copied straight from sysfile.c instead of doing all imports
+static int
+argfd(int n, int *pfd, struct file **pf)
+{
+  int fd;
+  struct file *f;
+
+  argint(n, &fd);
+  if(fd < 0 || fd >= NOFILE || (f=myproc()->ofile[fd]) == 0)
+    return -1;
+  if(pfd)
+    *pfd = fd;
+  if(pf)
+    *pf = f;
   return 0;
 }
 
@@ -158,45 +184,61 @@ static uint64 (*syscalls[])(void) = {
 [SYS_audit]   sys_audit,
 };
 
-
 void
 syscall(void)
 {
   int num;
   struct proc *p = myproc();
 
+  // any time we are here, we are about to make a system call.
+  // we can intercept args, etc.
   num = p->trapframe->a7;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
 
-    p->trapframe->a0 = syscalls[num]();
-    // if our system call was AUDIT, we specifically need to take what's in a0
-    // out right here. this contains the whitelist array for what calls to audit
-    if (num == 22) {
-      // audit call.
-      struct aud* bruh = (struct aud*)p->trapframe->a0;
-      printf("edit in kernel\n");
-      for (int i = 0; i < *(bruh->length); i++) {
-        whitelisted[i] = *(bruh->arr + i);
-      }
-      declared_length = *(bruh->length);
-      printf("process %s with id %d called audit at time %d\n", p->name, p->pid, ticks);
-      printf("declared length: %d\n", declared_length);
+    // if this is a file-related process, we want to look at the file
+    // before any calls are made, since we need to know who accessed it
+    // and we will lose the args after the syscall is made.
+    int fd = -1;
+    struct file *f;
+
+    // if it's any of these file related operations
+    if (num == SYS_read || num == SYS_fstat || num == SYS_dup 
+        || num == SYS_open || num == SYS_write || num == SYS_close) {
+      // we are trying to do SOMETHING with this file.
+      argfd(0, &fd, &f);
     }
-    if (!declared_length) {
-      // nothing is whitelisted.
-      printf("process %s with id %d called %s at time %d\n", p->name, p->pid, name_from_num[num], ticks);
+    
+    // let the system call go through.
+    p->trapframe->a0 = syscalls[num]();
+
+    // these things will be consistent across processes, no matter if it used a file
+    struct audit_data cur;
+    cur.process_pid = p->pid;
+    cur.process_name = p->name;
+    cur.time = ticks;
+    cur.process_name = name_from_num[num];
+    if (fd != -1) {
+      // need to set fd info
+      cur.fd_used = 1;
+      cur.fd_read = f->readable;
+      cur.fd_write = f->writable;
+
+
+      printf("Process %s pid %d called syscall %s at time %d and used FD %d (perms r: %d, w: %d)\n",
+              p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
     } else {
-      // something is whitelisted.
-      for (int i = 0; i < declared_length; i++) {
-        // if it's whitelisted, we care. otherwise, just let it time out.
-        if (num == whitelisted[i]) {
-          printf("process %s with id %d called %s at time %d\n", p->name, p->pid, name_from_num[num], ticks);
-        }
-      }
+      // just say we didn't use one
+      cur.fd_used = 0;
+
+
+      printf("Process %s pid %d called syscall %s at time %d\n", 
+            p->name, p->pid, name_from_num[num], ticks);
     }
 
+    // here just so we don't throw unused variable errors
+    printf("%d\n", cur->process_pid);
   } else {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);

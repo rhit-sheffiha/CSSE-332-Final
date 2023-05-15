@@ -4,20 +4,14 @@
 #include "kernel/syscall.h"
 
 void test_1(void) {
+  printf("Test 1: Simple syscall\n");
   int bruh = 12;
   wait(&bruh);
 }
 
 void test_2(void) {
-  printf("Trying to call audit\n");
-  int arr[] = {1, 2, 3, 4, 5};
-  int length = 5;
-  // call audit with the set array. keep kernel calls on
-  printf("edit\n");
-  audit(arr, &length);
-  // wait should be whitelisted, try it.
-  int sec = 2;
-  wait(&sec);
+  printf("bruh\n");
+
 }
 
 int main(int argc, char *argv[]) {

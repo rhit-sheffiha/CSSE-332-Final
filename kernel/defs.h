@@ -9,7 +9,6 @@ struct sleeplock;
 struct stat;
 struct superblock;
 struct list_head;
-struct aud;
 
 // bio.c
 void            binit(void);
@@ -87,7 +86,7 @@ void            printfinit(void);
 int             cpuid(void);
 void            exit(int);
 int             fork(void);
-uint64          audit(int*, int*);
+uint64          audit(int*);
 int             growproc(int);
 void            proc_mapstacks(pagetable_t);
 pagetable_t     proc_pagetable(struct proc *);
