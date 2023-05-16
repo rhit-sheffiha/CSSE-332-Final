@@ -724,3 +724,9 @@ procdump(void)
     printf("\n");
   }
 }
+
+uint64 logs(void *arg){
+    printf("hello %p\n", arg);
+    return 0;
+}
+
