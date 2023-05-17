@@ -105,3 +105,8 @@ uptime:
  li a7, SYS_uptime
  ecall
  ret
+.global logs
+logs:
+ li a7, SYS_logs
+ ecall
+ ret

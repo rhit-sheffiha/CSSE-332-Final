@@ -87,6 +87,7 @@ void            printfinit(void);
 int             cpuid(void);
 void            exit(int);
 int             fork(void);
+uint64           logs(void*);
 uint64          audit(int*, int*);
 int             growproc(int);
 void            proc_mapstacks(pagetable_t);
@@ -195,6 +196,8 @@ void            list_add(struct list_head *, struct list_head *);
 void            list_add_tail(struct list_head *, struct list_head *);
 void            list_del(struct list_head *);
 void            list_del_init(struct list_head *);
+
+//audit.c
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

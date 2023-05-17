@@ -6,10 +6,12 @@
 #include "proc.h"
 #include "syscall.h"
 #include "defs.h"
+#include "audit_list.h"
+#include "audit_source.h"
 
 #define MAX_SIZE 1024
 struct audit_data bruh[MAX_SIZE];
-int num_entries = 0;
+struct audit_list list;
 
 // idea that is if we're in one of these, we need
 // to fetch file fd. This changes a0, so we need to know.
@@ -183,7 +185,7 @@ syscall(void)
         whitelisted[i] = *(bruh->arr + i);
       }
       declared_length = *(bruh->length);
-      printf("process %s with id %d called audit at time %d\n", p->name, p->pid, ticks);
+      //printf("process %s with id %d called audit at time %d\n", p->name, p->pid, ticks);
       printf("declared length: %d\n", declared_length);
     }
     if (!declared_length) {
@@ -204,4 +206,5 @@ syscall(void)
             p->pid, p->name, num);
     p->trapframe->a0 = -1;
   }
+
 }

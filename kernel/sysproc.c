@@ -102,3 +102,12 @@ sys_audit(void)
   return audit((int*) arr_addr, (int*) length);
 }
 
+uint64           
+sys_logs(void)
+{
+    printf("Working\n");
+    uint64 addr;
+    argaddr(0, &addr);
+    return logs((void *) addr);
+}
+

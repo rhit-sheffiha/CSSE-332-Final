@@ -5,6 +5,10 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "audit_list.h"
+#include "audit_source.h"
+
+extern void write_to_logs(void *);
 
 struct cpu cpus[NCPU];
 
@@ -711,7 +715,7 @@ procdump(void)
   };
   struct proc *p;
   char *state;
-
+  
   printf("\n");
   for(p = proc; p < &proc[NPROC]; p++){
     if(p->state == UNUSED)
@@ -725,8 +729,29 @@ procdump(void)
   }
 }
 
-uint64 logs(void *arg){
-    printf("hello %p\n", arg);
-    return 0;
+uint64 logs(void *arg)
+{
+    
+    struct audit_node node = {.process_name = "Proc1\n", .pid = 0};
+    /*
+    struct audit_node node1;
+    struct audit_node node2;
+    struct audit_node node3;
+
+    node.process_name = "PROC0\n";
+    node1.process_name = "PROC1\n";
+    node2.process_name = "PROC2\n";
+    node3.process_name = "PROC3\n";
+
+    node.next = &node1;
+    node1.next = &node2;
+    node2.next = &node3;
+    */
+    struct audit_list auditlist;
+    auditlist.size = 4;
+    auditlist.head = &node;
+
+    write_to_logs((void *)&auditlist);
+    return (uint64)1;
 }
 
