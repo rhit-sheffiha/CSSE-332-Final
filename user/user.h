@@ -25,6 +25,7 @@ int uptime(void);
 
 //Audit testing
 void logs(void *);
+int try2(void*);
 
 // ulib.c
 int stat(const char*, struct stat*);

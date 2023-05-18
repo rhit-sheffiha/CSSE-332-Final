@@ -755,3 +755,11 @@ uint64 logs(void *arg)
     return (uint64)1;
 }
 
+uint64 try2(void *arg)
+{
+
+printf("In try two sys call with arg %p\n", arg);
+return 0;
+}
+
+

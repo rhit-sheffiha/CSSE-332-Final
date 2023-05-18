@@ -146,47 +146,16 @@ void write_to_logs(void *list){
     struct file *f;
     char *filename = "/AuditLogs.txt";
     
-
-/*
-    if((ip = namei(filename)) == 0){
-	return;	
-    }
-    printf("READY TO WRITE\n");
-    ilock(ip);
-    if((f = filealloc()) == 0){
-	if(f){
-	    fileclose(f);
-	}
-        iunlockput(ip);
-	return;
-    }
-    
-    f->type = FD_INODE;
-    f->off = 0;
-    f->ip = ip;
-    f->readable = (O_WRONLY);
-    f->writable = O_WRONLY;
-
-    iunlock(ip);
-*/
-
     f = open(filename);
 
 //    uint64 fd = open(filename);
     if(f == (struct file *)-1)
 	exit(0);
-    //write(fd, data, strlen(data)); 
-    //struct audit_list *auditlist = (struct audit_list *)list;
-    //struct audit_node *node = auditlist -> head;
+
     printf("6\n");
     char temp[5] = "happ";
     filewrite(f, (uint64)(temp), 5);
-    /*
-    while(node != 0){
-	filewrite(f, (uint64)(node -> process_name), strlen(node -> process_name));
-	node = node -> next;
-    }
-    */
+
     printf("What\n");
 
 

@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_audit  22
 #define SYS_logs   23
+#define SYS_try2   24

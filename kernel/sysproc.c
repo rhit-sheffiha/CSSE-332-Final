@@ -105,9 +105,13 @@ sys_audit(void)
 uint64           
 sys_logs(void)
 {
-    printf("Working\n");
     uint64 addr;
     argaddr(0, &addr);
     return logs((void *) addr);
 }
 
+uint64 sys_try2(void){
+    uint64 addr;
+    argaddr(0, &addr);
+    return try2((void *) addr);
+}

@@ -110,3 +110,8 @@ logs:
  li a7, SYS_logs
  ecall
  ret
+.global try2
+try2:
+ li a7, SYS_try2
+ ecall
+ ret
