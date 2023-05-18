@@ -192,13 +192,13 @@ syscall(void)
     }
     if (!declared_length) {
       // nothing is whitelisted.
-      printf("process %s with id %d called %s at time %d\n", p->name, p->pid, name_from_num[num], ticks);
+      //printf("process %s with id %d called %s at time %d\n", p->name, p->pid, name_from_num[num], ticks);
     } else {
       // something is whitelisted.
       for (int i = 0; i < declared_length; i++) {
         // if it's whitelisted, we care. otherwise, just let it time out.
         if (num == whitelisted[i]) {
-          printf("process %s with id %d called %s at time %d\n", p->name, p->pid, name_from_num[num], ticks);
+          //printf("process %s with id %d called %s at time %d\n", p->name, p->pid, name_from_num[num], ticks);
         }
       }
     }

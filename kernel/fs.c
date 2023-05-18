@@ -508,19 +508,24 @@ writei(struct inode *ip, int user_src, uint64 src, uint off, uint n)
   uint tot, m;
   struct buf *bp;
 
-  if(off > ip->size || off + n < off)
+  if(off > ip->size || off + n < off){
     return -1;
-  if(off + n > MAXFILE*BSIZE)
+  }
+  if(off + n > MAXFILE*BSIZE){
     return -1;
+  }
 
   for(tot=0; tot<n; tot+=m, off+=m, src+=m){
     uint addr = bmap(ip, off/BSIZE);
-    if(addr == 0)
+    if(addr == 0){
       break;
+    }
     bp = bread(ip->dev, addr);
     m = min(n - tot, BSIZE - off%BSIZE);
+    printf("m: %d\n",m);
     if(either_copyin(bp->data + (off % BSIZE), user_src, src, m) == -1) {
       brelse(bp);
+      printf("I am going to cry\n");
       break;
     }
     log_write(bp);
