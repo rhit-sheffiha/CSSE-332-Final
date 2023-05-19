@@ -167,6 +167,7 @@ extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_audit(void);
+extern uint64 sys_check(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -193,6 +194,7 @@ static uint64 (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_audit]   sys_audit,
+[SYS_check]   sys_check,
 };
 
 void
@@ -248,13 +250,13 @@ syscall(void)
         cur.fd_used = 1;
         cur.fd_read = f->readable;
         cur.fd_write = f->writable;
-        printf("Process %s pid %d called syscall %s at time %d and used FD %d (perms r: %d, w: %d)\n",
-                p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
+//        printf("Process %s pid %d called syscall %s at time %d and used FD %d (perms r: %d, w: %d)\n",
+//                p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
       } else {
         // just say we didn't use one
         cur.fd_used = 0;
-        printf("Process %s pid %d called syscall %s at time %d\n", 
-                p->name, p->pid, name_from_num[num], ticks);
+//        printf("Process %s pid %d called syscall %s at time %d\n", 
+//                p->name, p->pid, name_from_num[num], ticks);
       }
       // here just so we don't throw unused variable errors
       int bruh = cur.process_pid;

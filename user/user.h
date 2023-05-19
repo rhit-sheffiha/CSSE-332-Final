@@ -25,6 +25,7 @@ int uptime(void);
 // pass in a int, just as a binary "yes/no"
 // to include a call in the audit log 
 int audit(uint);
+int check(void *);
 
 // ulib.c
 int stat(const char*, struct stat*);

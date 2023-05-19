@@ -1,11 +1,19 @@
+#include "types.h"
+#include "riscv.h"
+#include "defs.h"
+#include "param.h"
+#include "stat.h"
+#include "spinlock.h"
+#include "proc.h"
+#include "fs.h"
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
-
-#include "audit_list.h"
 #include "file_helper.h"
+#include "audit_list.h"
 
 void write_to_logs(void *list){
+
     struct file *f;
     char *filename = "/AuditLogs.txt";
     f = open(filename, O_CREATE);

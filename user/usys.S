@@ -110,3 +110,8 @@ audit:
  li a7, SYS_audit
  ecall
  ret
+.global check
+check:
+ li a7, SYS_check
+ ecall
+ ret

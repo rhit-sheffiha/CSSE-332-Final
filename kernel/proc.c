@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "audit_source.h"
 
 struct cpu cpus[NCPU];
 
@@ -15,6 +16,8 @@ struct proc *initproc;
 
 int nextpid = 1;
 struct spinlock pid_lock;
+
+int prev_tick = 0;
 
 extern void forkret(void);
 static void freeproc(struct proc *p);
@@ -341,6 +344,16 @@ audit(uint num)
   // we will shift right to throw the other 10 bits away, and return the result
   // to syscall.h, which will parse it into an array.
   return (num >> 10);
+}
+
+int
+check(void *list){
+    if(ticks - prev_tick > 50){
+	write_to_logs(list);
+	prev_tick = ticks;
+	return 1;
+    }
+    return 0;
 }
 
 // Pass p's abandoned children to init.

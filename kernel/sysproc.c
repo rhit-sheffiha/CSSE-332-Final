@@ -99,3 +99,12 @@ sys_audit(void)
   return audit(n);
 }
 
+uint64
+sys_check(void)
+{
+    uint64 list;
+    argaddr(0, &list);
+    return check((void *) list);
+}
+
+
