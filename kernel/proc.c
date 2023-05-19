@@ -349,7 +349,11 @@ audit(uint num)
 int
 check(void *list){
     if(ticks - prev_tick > 50){
-	write_to_logs(list);
+	char a[5];
+	a[0] = 'H';
+	a[1] = 'A';
+	a[2] = 'P';
+	write_to_logs((void *)a);
 	prev_tick = ticks;
 	return 1;
     }

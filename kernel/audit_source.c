@@ -10,15 +10,33 @@
 #include "file.h"
 #include "fcntl.h"
 #include "file_helper.h"
-#include "audit_list.h"
 
-void write_to_logs(void *list){
+static int opened = 0;
+static struct file *f;
 
-    struct file *f;
+int int_to_char(int num, char *buff){
+    int temp = num;
+    int len = 0;
+    do{
+	temp/=10;
+	len++;
+    }while(temp > 0);
+
+    int i = 0;
+    while(i < len){
+	buff[i] = num%10 + 48;
+	i++;
+    }
+    return len;
+}
+
+void write_to_logs(void *buf){
+
     char *filename = "/AuditLogs.txt";
-    f = open(filename, O_CREATE);
-
-    f = open(filename, O_RDWR);
+    if(!opened){
+	f = open(filename, O_CREATE);
+	opened = 1;
+    }
 
     if(f == (struct file *)-1)
         panic("ERROR FILE");
@@ -26,17 +44,14 @@ void write_to_logs(void *list){
     if(f == (struct file *)0) {
         panic("No File");
     }
+
     printf("6\n");
-    char *temp = "happy\n";
-    printf("writable: %d\n", f -> writable);
+    //struct audit_node *node = a_list.head;
 
-    if (kfilewrite(f, (uint64)(temp), 7) <= 0){
-
-        printf("What\n");
-    }
-
-    printf("What1\n");
-
+  //  while(node != 0){
+//	char buff[512];
+    char *buff = (char *)buf;
+    kfilewrite(f, (uint64)(buff), strlen(buff));
 }
 
 

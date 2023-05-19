@@ -9,6 +9,7 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "defs.h"
+#include "audit_source.h"
 
 struct audit_data {
   // process information
@@ -32,6 +33,9 @@ struct audit_data {
 #define MAX_SIZE 1024
 struct audit_data bruh[MAX_SIZE];
 int num_entries = 0;
+int prev_tickss = 0;
+char buff [2048];
+int offset = 0;
 
 // excluding audit, since it should ALWAYS be apparent.
 #define NUM_SYS_CALLS 21
@@ -206,7 +210,7 @@ syscall(void)
   // any time we are here, we are about to make a system call.
   // we can intercept args, etc.
   num = p->trapframe->a7;
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
 
@@ -240,6 +244,13 @@ syscall(void)
     // it should always be apparent when audit is called.
     if (whitelisted[num - 1] || num == SYS_audit) {
       // these things will be consistent across processes, no matter if it used a file
+    if(ticks - prev_tickss > 100){
+       write_to_logs((void *)buff);
+       prev_tickss = ticks;
+       offset = 0;
+       buff[0] = '\0';
+    }
+
       struct audit_data cur;
       cur.process_pid = p->pid;
       cur.process_name = p->name;
@@ -250,11 +261,45 @@ syscall(void)
         cur.fd_used = 1;
         cur.fd_read = f->readable;
         cur.fd_write = f->writable;
+
+
+	strncpy(buff + offset,p->name, strlen(p->name));
+	offset += strlen(p->name);
+	buff[offset] = '\t';
+	offset += 1;
+	strncpy(buff + offset,name_from_num[num], strlen(name_from_num[num]));
+	offset += strlen(name_from_num[num]);
+	buff[offset] = '\t';
+	offset += 1;
+    /*
+	strncpy("FD With Permissions r: ", buff + offset, 23);
+	buff[offset + 1] = f->readable ? 49: 48;
+	offset+=1;
+//	strncpy(" w: ", buff + offset, 4);
+	buff[offset + 1] = f->writable ? 49: 48;
+	offset +=1;
+    */
+	buff[offset] = '\n';
+        offset +=1;
+	
 //        printf("Process %s pid %d called syscall %s at time %d and used FD %d (perms r: %d, w: %d)\n",
 //                p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
       } else {
         // just say we didn't use one
         cur.fd_used = 0;
+	
+
+	strncpy(buff + offset,p->name, strlen(p->name));
+	offset += strlen(p->name);
+	buff[offset] = '\t';
+	offset += 1;
+	strncpy(buff + offset,name_from_num[num], strlen(name_from_num[num]));
+	offset += strlen(p->name);
+
+	buff[offset] = '\n';
+        offset +=1;
+	
+	
 //        printf("Process %s pid %d called syscall %s at time %d\n", 
 //                p->name, p->pid, name_from_num[num], ticks);
       }
