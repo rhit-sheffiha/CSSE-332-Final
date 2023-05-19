@@ -262,7 +262,7 @@ syscall(void)
         cur.fd_read = f->readable;
         cur.fd_write = f->writable;
 
-
+//here
 	strncpy(buff + offset,p->name, strlen(p->name));
 	offset += strlen(p->name);
 	buff[offset] = '\t';
@@ -271,19 +271,22 @@ syscall(void)
 	offset += strlen(name_from_num[num]);
 	buff[offset] = '\t';
 	offset += 1;
-    /*
+//end
+/*
 	strncpy("FD With Permissions r: ", buff + offset, 23);
-	buff[offset + 1] = f->readable ? 49: 48;
+*/
+	*(buff + offset) = f->readable ? 49: 48;
 	offset+=1;
 //	strncpy(" w: ", buff + offset, 4);
-	buff[offset + 1] = f->writable ? 49: 48;
-	offset +=1;
-    */
+        *(buff + offset) = '\t';
+	*(buff + offset + 1) = f->writable ? 49: 48;
+	offset +=2;
+//start
 	buff[offset] = '\n';
         offset +=1;
-	
+//end
 //        printf("Process %s pid %d called syscall %s at time %d and used FD %d (perms r: %d, w: %d)\n",
-//                p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
+  //              p->name, p->pid, name_from_num[num], ticks, fd, f->readable, f->writable);
       } else {
         // just say we didn't use one
         cur.fd_used = 0;
